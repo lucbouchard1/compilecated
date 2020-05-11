@@ -1,8 +1,7 @@
-name:                kaleidoscope
+name:                compilecated
 version:             0.1.0.0
-synopsis:            Haskell port of LLVM Kaleidoscope tutorial
-description:         Port of the Kaleidoscope tutorial for Haskell and LLVM
-homepage:            https://github.com/sdiehl/kaleidoscope
+synopsis:            Haskell C LLVM compoler for cs583
+description:         Haskell C LLVM compoler for cs583
 license:             MIT
 license-file:        LICENSE-MIT
 author:              Luc Bouchard
