@@ -28,7 +28,7 @@ binops = [[binary "*" Ex.AssocLeft,
 expr :: Parser Expr
 expr =  Ex.buildExpressionParser binops factor
 
-stmt :: Parser Stmt
+stmt :: Parser Expr
 stmt =  do
   e <- expr
   reservedOp ";"

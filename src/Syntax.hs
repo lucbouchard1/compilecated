@@ -10,11 +10,7 @@ data Expr
   | UnaryOp Name Expr
   deriving (Eq, Ord, Show)
 
--- Statements end with a semicolon
-type Stmt
-  = Expr
-
 data Defn
-  = Function Name [Name] [Stmt]
+  = Function Name [Name] [Expr]
   | Extern Name [Name]
   deriving (Eq, Ord, Show)
