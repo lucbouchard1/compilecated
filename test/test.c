@@ -1,5 +1,6 @@
 def bar(a) {
     a + 5;
+    a + 5;
 }
 
 def main(banana hello) {
