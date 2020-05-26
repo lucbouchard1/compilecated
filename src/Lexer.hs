@@ -19,6 +19,7 @@ lexer = Tok.makeTokenParser style
 integer    = Tok.integer lexer
 float      = Tok.float lexer
 parens     = Tok.parens lexer
+braces     = Tok.braces lexer
 commaSep   = Tok.commaSep lexer
 semiSep    = Tok.semiSep lexer
 identifier = Tok.identifier lexer

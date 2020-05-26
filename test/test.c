@@ -1,2 +1,3 @@
-def bar(a)
+def bar(a) {
     a + 5;
+}

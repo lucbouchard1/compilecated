@@ -28,18 +28,24 @@ binops = [[binary "*" Ex.AssocLeft,
 expr :: Parser Expr
 expr =  Ex.buildExpressionParser binops factor
 
+stmt :: Parser Stmt
+stmt =  do
+  e <- expr
+  reservedOp ";"
+  return e
+
 variable :: Parser Expr
 variable = Var <$> identifier
 
-function :: Parser Expr
+function :: Parser Defn
 function = do
   reserved "def"
   name <- identifier
   args <- parens $ many identifier
-  body <- expr
+  body <- braces $ many stmt
   return $ Function name args body
 
-extern :: Parser Expr
+extern :: Parser Defn
 extern = do
   reserved "extern"
   name <- identifier
@@ -59,10 +65,9 @@ factor = try floating
       <|> try variable
       <|> (parens expr)
 
-defn :: Parser Expr
+defn :: Parser Defn
 defn = try extern
     <|> try function
-    <|> expr
 
 contents :: Parser a -> Parser a
 contents p = do
@@ -71,14 +76,13 @@ contents p = do
   eof
   return r
 
-toplevel :: Parser [Expr]
+toplevel :: Parser [Defn]
 toplevel = many $ do
     def <- defn
-    reservedOp ";"
     return def
 
-parseExpr :: String -> Either ParseError Expr
-parseExpr s = parse (contents expr) "<stdin>" s
+-- parseExpr :: String -> Either ParseError Expr
+-- parseExpr s = parse (contents expr) "<stdin>" s
 
-parseToplevel :: String -> Either ParseError [Expr]
+parseToplevel :: String -> Either ParseError [Defn]
 parseToplevel s = parse (contents toplevel) "<stdin>" s
