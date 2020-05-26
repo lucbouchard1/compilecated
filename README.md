@@ -6,17 +6,21 @@ Compilecated is a C compiler written in Haskell.
 
 ## Build and Run
 
-To build the compiler, run:
+You need to have stack installed to build my project. If you don't have stack installed, here are instructions: https://docs.haskellstack.org/en/stable/install_and_upgrade/
+
+To build my compiler, run:
 
 ```
 stack build
 ```
 
-And to open the repl, run:
+Right now, the program just outputs LLVM IR for a C file. To see this in action, run the following:
 
 ```
-stack exec compilecated
+stack exec compilecated test/test.c
 ```
+
+You can also write your own C files and pass them to the compiler, just be aware that I haven't yet implemented MANY C features.
 
 
 ## Milestone 1
@@ -27,3 +31,9 @@ My next steps are going to be to transition from the Kaleidoscope syntax to C sy
 
 - Do I need to significantly change the AST definition to support C style syntax?
 - Right now all variables are doubles. How does adding types change the AST and parser setup?
+
+## Milestone 2
+
+I've made a fair amount of progress in my understanding of Parsec and LLVM, but I still have quite a bit to implement. I've started modifying the AST/Code Generation to support C syntax, but I'm doing it rather slowly, ensuring that I actually understand the changes I'm making.
+
+Now that I have a solid foundation in Parsec and LLVM IR, my productivity will be much better. I will be spending a lot of time on this project over the weeks remaining.
