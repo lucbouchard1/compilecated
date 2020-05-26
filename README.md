@@ -36,4 +36,4 @@ My next steps are going to be to transition from the Kaleidoscope syntax to C sy
 
 I've made a fair amount of progress in my understanding of Parsec and LLVM, but I still have quite a bit to implement. I've started modifying the AST/Code Generation to support C syntax, but I'm doing it rather slowly, ensuring that I actually understand the changes I'm making.
 
-Now that I have a solid foundation in Parsec and LLVM IR, my productivity will be much better. I will be spending a lot of time on this project over the weeks remaining.
+Now that I have a solid foundation in Parsec and LLVM IR, my productivity will be much better. I will be spending a lot of time on this project during two weeks remaining.
