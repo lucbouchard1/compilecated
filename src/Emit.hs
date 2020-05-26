@@ -22,7 +22,7 @@ import qualified Syntax as S
 toSig :: [String] -> [(AST.Type, AST.Name)]
 toSig = map (\x -> (double, AST.Name x))
 
-codegenTop :: S.Expr -> LLVM ()
+codegenTop :: S.Defn -> LLVM ()
 codegenTop (S.Function name args body) = do
   define double name fnargs bls
   where
@@ -34,19 +34,12 @@ codegenTop (S.Function name args body) = do
         var <- alloca double
         store var (local (AST.Name a))
         assign a var
-      cgen body >>= ret
+      forM body $ \s -> cgen s >>= ret
 
 codegenTop (S.Extern name args) = do
   external double name fnargs
   where fnargs = toSig args
 
-codegenTop exp = do
-  define double "main" [] blks
-  where
-    blks = createBlocks $ execCodegen $ do
-      entry <- addBlock entryBlockName
-      setBlock entry
-      cgen exp >>= ret
 
 -------------------------------------------------------------------------------
 -- Operations
