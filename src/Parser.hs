@@ -41,7 +41,7 @@ function :: Parser Defn
 function = do
   reserved "def"
   name <- identifier
-  args <- parens $ many identifier
+  args <- parens $ commaSep identifier
   body <- braces $ many stmt
   return $ Function name args body
 
