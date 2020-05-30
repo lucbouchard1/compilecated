@@ -24,6 +24,16 @@ process modo source = do
       ast <- codegen modo ex
       return $ Just ast
 
+printAst :: String -> IO ()
+printAst source = do
+  let res = parseToplevel source
+  case res of
+    Left err -> print err
+    Right ex -> print ex
+
+processAst :: String -> IO ()
+processAst fname = readFile fname >>= printAst
+
 processFile :: String -> IO (Maybe AST.Module)
 processFile fname = readFile fname >>= process initModule
 

@@ -18,12 +18,13 @@ int = do
 floating :: Parser Expr
 floating = Float <$> float
 
-binary s assoc = Ex.Infix (reservedOp s >> return (BinaryOp s)) assoc
+binary s = Ex.Infix (reservedOp s >> return (BinaryOp s))
+prefix s = Ex.Prefix (reservedOp s >> return (UnaryOp s))
 
-binops = [[binary "*" Ex.AssocLeft,
-          binary "/" Ex.AssocLeft]
-        ,[binary "+" Ex.AssocLeft,
-          binary "-" Ex.AssocLeft]]
+binops = [ [binary "*" Ex.AssocLeft, binary "/" Ex.AssocLeft]
+         , [binary "+" Ex.AssocLeft, binary "-" Ex.AssocLeft]
+         , [prefix "return"]
+         ]
 
 expr :: Parser Expr
 expr =  Ex.buildExpressionParser binops factor
@@ -36,6 +37,19 @@ stmt =  do
 
 variable :: Parser Expr
 variable = Var <$> identifier
+
+call :: Parser Expr
+call = do
+  name <- identifier
+  args <- parens $ commaSep expr
+  return $ Call name args
+
+factor :: Parser Expr
+factor = try floating
+      <|> try int
+      <|> try call
+      <|> try variable
+      <|> (parens expr)
 
 function :: Parser Defn
 function = do
@@ -51,19 +65,6 @@ extern = do
   name <- identifier
   args <- parens $ many identifier
   return $ Extern name args
-
-call :: Parser Expr
-call = do
-  name <- identifier
-  args <- parens $ commaSep expr
-  return $ Call name args
-
-factor :: Parser Expr
-factor = try floating
-      <|> try int
-      <|> try call
-      <|> try variable
-      <|> (parens expr)
 
 defn :: Parser Defn
 defn = try extern
