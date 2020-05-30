@@ -1,12 +1,8 @@
 def bar(a) {
     a + 5;
-    a + 5;
+    return a;
 }
 
 def main(banana, hello) {
-    banana + hello;
-    banana - hello;
-    banana + 5;
-
-    10 - banana;
+    return 5 + banana + hello;
 }

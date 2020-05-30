@@ -21,13 +21,13 @@ floating = Float <$> float
 binary s = Ex.Infix (reservedOp s >> return (BinaryOp s))
 prefix s = Ex.Prefix (reservedOp s >> return (UnaryOp s))
 
-binops = [ [binary "*" Ex.AssocLeft, binary "/" Ex.AssocLeft]
-         , [binary "+" Ex.AssocLeft, binary "-" Ex.AssocLeft]
-         , [prefix "return"]
-         ]
+ops = [ [binary "*" Ex.AssocLeft, binary "/" Ex.AssocLeft]
+      , [binary "+" Ex.AssocLeft, binary "-" Ex.AssocLeft]
+      , [prefix "return"]
+      ]
 
 expr :: Parser Expr
-expr =  Ex.buildExpressionParser binops factor
+expr =  Ex.buildExpressionParser ops factor
 
 stmt :: Parser Expr
 stmt =  do

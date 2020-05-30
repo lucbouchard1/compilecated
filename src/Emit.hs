@@ -34,7 +34,7 @@ codegenTop (S.Function name args body) = do
         var <- alloca double
         store var (local (AST.Name a))
         assign a var
-      forM body $ \s -> cgen s >>= ret
+      cgenBody body
 
 codegenTop (S.Extern name args) = do
   external double name fnargs
@@ -44,6 +44,12 @@ codegenTop (S.Extern name args) = do
 -------------------------------------------------------------------------------
 -- Operations
 -------------------------------------------------------------------------------
+
+-- NOTE: Since we don't yet have types, functions that return nothing return 0
+cgenBody :: [S.Expr] -> Codegen (AST.Named AST.Terminator)
+cgenBody []                         = ret $ cons $ C.Float (F.Double 0)
+cgenBody (S.UnaryOp "return" a :xs) = cgen a >>= ret
+cgenBody (x :xs)                    = cgen x >> cgenBody xs
 
 lt :: AST.Operand -> AST.Operand -> Codegen AST.Operand
 lt a b = do
