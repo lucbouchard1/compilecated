@@ -1,8 +1,10 @@
 def bar(a) {
-    a + 5;
-    return a;
-}
-
-def main(banana, hello) {
-    return 5 + banana + hello;
+    b;
+    b = 5;
+    if (a) {
+        b = 6 + a;
+    } else {
+        
+    }
+    return b;
 }

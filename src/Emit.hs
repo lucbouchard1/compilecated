@@ -60,7 +60,7 @@ cgenStmt :: S.Stmt -> Codegen ()
 cgenStmt (S.IfBlk cond t f) = do
   ift <- addBlock "if.true"
   iff <- addBlock "if.false"
-  exit <- getBlock
+  exit <- addBlock "if.exit"
 
   -- Test condition
   cond <- cgen cond
@@ -76,6 +76,9 @@ cgenStmt (S.IfBlk cond t f) = do
   setBlock iff
   forM f cgenStmt
   br exit
+
+  -- Setup exit
+  setBlock exit
   return ()
 cgenStmt (S.Decl name) = do
   i <- alloca double
