@@ -19,6 +19,11 @@ import qualified Data.Map as Map
 import Codegen
 import qualified Syntax as S
 
+one = cons $ C.Float (F.Double 1.0)
+zero = cons $ C.Float (F.Double 0.0)
+false = zero
+true = one
+
 toSig :: [String] -> [(AST.Type, AST.Name)]
 toSig = map (\x -> (double, AST.Name x))
 
@@ -46,10 +51,46 @@ codegenTop (S.Extern name args) = do
 -------------------------------------------------------------------------------
 
 -- NOTE: Since we don't yet have types, functions that return nothing return 0
-cgenBody :: [S.Expr] -> Codegen (AST.Named AST.Terminator)
-cgenBody []                         = ret $ cons $ C.Float (F.Double 0)
-cgenBody (S.UnaryOp "return" a :xs) = cgen a >>= ret
-cgenBody (x :xs)                    = cgen x >> cgenBody xs
+cgenBody :: [S.Stmt] -> Codegen (AST.Named AST.Terminator)
+cgenBody []               = ret $ cons $ C.Float (F.Double 0)
+cgenBody (S.Return e :xs) = cgen e >>= ret
+cgenBody (x :xs)          = cgenStmt x >> cgenBody xs
+
+cgenStmt :: S.Stmt -> Codegen ()
+cgenStmt (S.IfBlk cond t f) = do
+  ift <- addBlock "if.true"
+  iff <- addBlock "if.false"
+  exit <- getBlock
+
+  -- Test condition
+  cond <- cgen cond
+  test <- fcmp FP.ONE false cond
+  cbr test ift iff
+
+  -- Setup true block
+  setBlock ift
+  forM t cgenStmt
+  br exit
+
+  -- Setup false block
+  setBlock iff
+  forM f cgenStmt
+  br exit
+  return ()
+cgenStmt (S.Decl name) = do
+  i <- alloca double
+  store i zero
+  assign name i
+  return ()
+cgenStmt (S.Assign name e) = do
+  i <- getvar name
+  val <- cgen e
+  store i val
+  return ()
+cgenStmt (S.Return e) = do
+  val <- cgen e
+  ret val
+  return ()
 
 lt :: AST.Operand -> AST.Operand -> Codegen AST.Operand
 lt a b = do

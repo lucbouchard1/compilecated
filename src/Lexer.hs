@@ -9,7 +9,7 @@ lexer :: Tok.TokenParser ()
 lexer = Tok.makeTokenParser style
   where
     ops = ["+","*","-","/",";",",","<","return"]
-    names = ["def","extern"]
+    names = ["def","extern", "if", "else"]
     style = emptyDef {
                Tok.commentLine = "#"
              , Tok.reservedOpNames = ops

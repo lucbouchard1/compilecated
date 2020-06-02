@@ -23,17 +23,10 @@ prefix s = Ex.Prefix (reservedOp s >> return (UnaryOp s))
 
 ops = [ [binary "*" Ex.AssocLeft, binary "/" Ex.AssocLeft]
       , [binary "+" Ex.AssocLeft, binary "-" Ex.AssocLeft]
-      , [prefix "return"]
       ]
 
 expr :: Parser Expr
 expr =  Ex.buildExpressionParser ops factor
-
-stmt :: Parser Expr
-stmt =  do
-  e <- expr
-  reservedOp ";"
-  return e
 
 variable :: Parser Expr
 variable = Var <$> identifier
@@ -50,6 +43,42 @@ factor = try floating
       <|> try call
       <|> try variable
       <|> (parens expr)
+
+ifblk :: Parser Stmt
+ifblk = do
+  reserved "if"
+  cond <- parens $ expr
+  t    <- braces $ many stmt
+  reserved "else"
+  f    <- braces $ many stmt
+  return $ IfBlk cond t f
+
+decl :: Parser Stmt
+decl = do
+  name <- identifier
+  reservedOp ";"
+  return $ Decl name
+
+assign :: Parser Stmt
+assign = do
+  name <- identifier
+  reservedOp "="
+  val  <- expr
+  reservedOp ";"
+  return $ Assign name val
+
+ret :: Parser Stmt
+ret = do
+  reservedOp "return"
+  val  <- expr
+  reservedOp ";"
+  return $ Return val
+
+stmt :: Parser Stmt
+stmt = try decl
+  <|> try assign
+  <|> ret
+  <|> ifblk
 
 function :: Parser Defn
 function = do

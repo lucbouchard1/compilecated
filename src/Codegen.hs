@@ -267,6 +267,9 @@ load ptr = instr $ Load False ptr Nothing 0 []
 br :: Name -> Codegen (Named Terminator)
 br val = terminator $ Do $ Br val []
 
+phi :: Type -> [(Operand, Name)] -> Codegen Operand
+phi ty incoming = instr $ Phi ty incoming []
+
 cbr :: Operand -> Name -> Name -> Codegen (Named Terminator)
 cbr cond tr fl = terminator $ Do $ CondBr cond tr fl []
 

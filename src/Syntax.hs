@@ -10,7 +10,14 @@ data Expr
   | UnaryOp Name Expr
   deriving (Eq, Ord, Show)
 
+data Stmt
+  = IfBlk Expr [Stmt] [Stmt]
+  | Decl String
+  | Assign String Expr
+  | Return Expr
+  deriving (Eq, Ord, Show)
+
 data Defn
-  = Function Name [Name] [Expr]
+  = Function Name [Name] [Stmt]
   | Extern Name [Name]
   deriving (Eq, Ord, Show)
