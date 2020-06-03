@@ -67,6 +67,9 @@ external retty label argtys = addDefn $
 double :: Type
 double = FloatingPointType 64 IEEE
 
+integer :: Type
+integer = IntegerType 32
+
 -------------------------------------------------------------------------------
 -- Names
 -------------------------------------------------------------------------------
@@ -83,7 +86,7 @@ uniqueName nm ns =
 -- Codegen State
 -------------------------------------------------------------------------------
 
-type SymbolTable = [(String, Operand)]
+type SymbolTable = [(String, (Operand, Type))]
 
 data CodegenState
   = CodegenState {
@@ -201,12 +204,12 @@ current = do
 -- Symbol Table
 -------------------------------------------------------------------------------
 
-assign :: String -> Operand -> Codegen ()
-assign var x = do
+assign :: String -> Type -> Operand -> Codegen ()
+assign var t x = do
   lcls <- gets symtab
-  modify $ \s -> s { symtab = [(var, x)] ++ lcls }
+  modify $ \s -> s { symtab = [(var, (x, t))] ++ lcls }
 
-getvar :: String -> Codegen Operand
+getvar :: String -> Codegen (Operand, Type)
 getvar var = do
   syms <- gets symtab
   case lookup var syms of

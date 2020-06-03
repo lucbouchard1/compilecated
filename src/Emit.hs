@@ -24,27 +24,32 @@ zero = cons $ C.Float (F.Double 0.0)
 false = zero
 true = one
 
-toSig :: [String] -> [(AST.Type, AST.Name)]
-toSig = map (\x -> (double, AST.Name x))
+convertType :: S.Type -> AST.Type
+convertType S.Int = integer
+convertType S.Float = double
+
+toSig :: [S.Decl] -> [(AST.Type, AST.Name)]
+toSig = map (\(S.Decl t n) -> (convertType t, AST.Name n))
 
 codegenTop :: S.Defn -> LLVM ()
-codegenTop (S.Function name args body) = do
+codegenTop (S.Function _ name args body) = do -- TODO: Check return type
   define double name fnargs bls
   where
     fnargs = toSig args
     bls = createBlocks $ execCodegen $ do
       entry <- addBlock entryBlockName
       setBlock entry
-      forM args $ \a -> do
-        var <- alloca double
-        store var (local (AST.Name a))
-        assign a var
+      forM args $ \(S.Decl t n) -> do
+        var <- alloca $ convertType t
+        store var (local (AST.Name n))
+        assign n (convertType t) var
       cgenBody body
 
-codegenTop (S.Extern name args) = do
-  external double name fnargs
-  where fnargs = toSig args
+-- codegenTop (S.Extern name args) = do
+--   external double name fnargs
+--   where fnargs = toSig args
 
+codegenTop (S.Extern name args) = return ()
 
 -------------------------------------------------------------------------------
 -- Operations
@@ -80,13 +85,14 @@ cgenStmt (S.IfBlk cond t f) = do
   -- Setup exit
   setBlock exit
   return ()
-cgenStmt (S.Decl name) = do
-  i <- alloca double
-  store i zero
-  assign name i
+cgenStmt (S.Define (S.Decl t name) e) = do
+  i   <- alloca $ convertType t
+  val <- cgen e
+  store i val
+  assign name (convertType t) i
   return ()
 cgenStmt (S.Assign name e) = do
-  i <- getvar name
+  (i, _) <- getvar name
   val <- cgen e
   store i val
   return ()
@@ -112,8 +118,8 @@ cgen :: S.Expr -> Codegen AST.Operand
 cgen (S.UnaryOp op a) = do
   cgen $ S.Call ("unary" ++ op) [a]
 cgen (S.BinaryOp "=" (S.Var var) val) = do
-  a <- getvar var
-  cval <- cgen val
+  (a, _) <- getvar var
+  cval   <- cgen val
   store a cval
   return cval
 cgen (S.BinaryOp op a b) = do
@@ -123,8 +129,11 @@ cgen (S.BinaryOp op a b) = do
       cb <- cgen b
       f ca cb
     Nothing -> error "No such operator"
-cgen (S.Var x) = getvar x >>= load
-cgen (S.Float n) = return $ cons $ C.Float (F.Double n)
+cgen (S.Var x) = do
+  (i, _) <- getvar x
+  load i
+cgen (S.FloatLit n) = return $ cons $ C.Float (F.Double n)
+cgen (S.IntLit n)   = return $ cons $ C.Int 32 n
 cgen (S.Call fn args) = do
   largs <- mapM cgen args
   call (externf (AST.Name fn)) largs

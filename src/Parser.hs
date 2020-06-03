@@ -13,10 +13,10 @@ import Syntax
 int :: Parser Expr
 int = do
   n <- integer
-  return $ Float (fromInteger n)
+  return $ IntLit (fromInteger n)
 
 floating :: Parser Expr
-floating = Float <$> float
+floating = FloatLit <$> float
 
 binary s = Ex.Infix (reservedOp s >> return (BinaryOp s))
 prefix s = Ex.Prefix (reservedOp s >> return (UnaryOp s))
@@ -44,6 +44,30 @@ factor = try floating
       <|> try variable
       <|> (parens expr)
 
+intType :: Parser Type
+intType = do
+  reserved "int"
+  return Int
+
+floatType :: Parser Type
+floatType = do
+  reserved "float"
+  return Float
+
+voidType :: Parser Type
+voidType = do
+  reserved "void"
+  return Void
+
+factorType :: Parser Type
+factorType = intType <|> floatType <|> voidType
+
+decl :: Parser Decl
+decl = do
+  t    <- factorType
+  name <- identifier
+  return $ Decl t name
+
 ifblk :: Parser Stmt
 ifblk = do
   reserved "if"
@@ -53,11 +77,13 @@ ifblk = do
   f    <- braces $ many stmt
   return $ IfBlk cond t f
 
-decl :: Parser Stmt
-decl = do
-  name <- identifier
+define :: Parser Stmt
+define = do
+  d    <- decl
+  reservedOp "="
+  val  <- expr
   reservedOp ";"
-  return $ Decl name
+  return $ Define d val
 
 assign :: Parser Stmt
 assign = do
@@ -75,18 +101,18 @@ ret = do
   return $ Return val
 
 stmt :: Parser Stmt
-stmt = try decl
+stmt = try define
   <|> try assign
   <|> ret
   <|> ifblk
 
 function :: Parser Defn
 function = do
-  reserved "def"
+  t    <- factorType
   name <- identifier
-  args <- parens $ commaSep identifier
+  args <- parens $ commaSep decl
   body <- braces $ many stmt
-  return $ Function name args body
+  return $ Function t name args body
 
 extern :: Parser Defn
 extern = do
