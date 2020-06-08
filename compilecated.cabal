@@ -19,6 +19,7 @@ executable compilecated
     Lexer
     Parser
     Syntax
+    Types
 
   build-depends:
       base                 >= 4.7 && <5

@@ -1,10 +1,5 @@
-def bar(a) {
-    b;
-    b = 5;
-    if (a) {
-        b = 6 + a;
-    } else {
-        
-    }
-    return b;
+int bar(int a, float c) {
+    int b = 5;
+
+    return a + c;
 }

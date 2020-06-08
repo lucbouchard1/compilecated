@@ -5,6 +5,7 @@ module Types where
 
 import Control.Monad.State
 import Control.Applicative
+import Control.Monad.Except
 
 import qualified Syntax as S
 
@@ -28,12 +29,12 @@ execTypeCheck m = execState (runTypeCheck m) emptyTypeCheck
 
 -- Symbol Table
 
-assign :: String -> Type -> TypeCheck ()
+assign :: String -> S.Type -> TypeCheck ()
 assign var x = do
   syms <- gets symtab
   modify $ \s -> s { symtab = [(var, x)] ++ syms }
 
-getvar :: String -> TypeCheck Type
+getvar :: String -> TypeCheck S.Type
 getvar var = do
   syms <- gets symtab
   case lookup var syms of
@@ -42,16 +43,16 @@ getvar var = do
 
 -- Check types
 
-checkType :: S.Expr -> TypeCheck Type
+checkType :: S.Expr -> TypeCheck S.Type
 checkType (S.Var s)          = getvar s
-checkType (S.Call _, _)      = return S.Int -- TODO: Return the actual function type
+checkType (S.Call _ _)      = return S.Int -- TODO: Return the actual function type
 checkType (S.BinaryOp _ l r) = do -- TODO: Differentiate on different operations
   lt <- checkType l
   rt <- checkType r
-  if lt == rt then lt else error $ "Expected type: " ++ show lt
-checkType (S.Unary _ e) = checkType e
+  if lt == rt then return lt else error $ "Expected type: " ++ show lt
+checkType (S.UnaryOp _ e) = checkType e
 
-checkDecl :: S.Stmt -> TypeCheck ()
+checkDecl :: S.Decl -> TypeCheck ()
 checkDecl (S.Decl t n) = assign n t
 
 checkStmt :: S.Stmt -> TypeCheck ()
@@ -66,7 +67,7 @@ checkStmt (S.Assign n e) = do
   varT <- getvar n
   expT <- checkType e
   if varT == expT then return () else error $ "Expected type: " ++ show varT
-checkStmt (S.Return) = return () -- TODO: Check return type
+checkStmt (S.Return _) = return () -- TODO: Check return type
 
 checkTopLevel :: S.Defn -> TypeCheck ()
 checkTopLevel (S.Function t n args body) = do
@@ -74,3 +75,6 @@ checkTopLevel (S.Function t n args body) = do
   forM body checkStmt
   return ()
 checkTopLevel (S.Extern _ _) = return ()
+
+typecheck :: [S.Defn] -> [TypeCheckState]
+typecheck ast = map execTypeCheck (map checkTopLevel ast)
