@@ -22,7 +22,7 @@ process modo source = do
   case res of
     Left err -> print err >> return Nothing
     Right ex -> do
-      return $ typecheck ex
+      typecheck ex
       ast <- codegen modo ex
       return $ Just ast
 
