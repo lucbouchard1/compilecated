@@ -24,7 +24,8 @@ process modo source = do
     Left err -> print err >> return Nothing
     Right ex -> do
       t <- runExceptT $ typecheck ex
-      either (putStrLn . show) (\_ -> return ()) t
+      either (\_ -> putStrLn "Fail") (\_ -> putStrLn "Wooo") t
+      putStrLn $ show t
       ast <- codegen modo ex
       return $ Just ast
 
