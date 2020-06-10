@@ -6,10 +6,17 @@ module Types where
 import Control.Monad.State
 import Control.Applicative
 import Control.Monad.Except
+import Control.Exception
 
 import qualified Syntax as S
 
 type SymbolTable = [(String, S.Type)]
+
+data TypeCheckException =
+  MismatchedTypes S.Type S.Type
+  deriving (Show)
+
+instance Exception TypeCheckException
 
 data TypeCheckState 
   = TypeCheckState {
@@ -50,7 +57,7 @@ checkType (S.Call _ _)      = return S.Int -- TODO: Return the actual function t
 checkType (S.BinaryOp _ l r) = do -- TODO: Differentiate on different operations
   lt <- checkType l
   rt <- checkType r
-  if lt == rt then return lt else error $ "Expected type: " ++ show lt
+  if lt == rt then return lt else throw $ MismatchedTypes lt rt
 checkType (S.UnaryOp _ e) = checkType e
 checkType (S.FloatLit _)  = return S.Float
 checkType (S.IntLit _)    = return S.Int
@@ -81,8 +88,6 @@ checkTopLevel (S.Function t n args body) = do
   return ()
 checkTopLevel (S.Extern _ _) = return ()
 
-typecheck :: [S.Defn] -> IO ()
+typecheck :: [S.Defn] -> ExceptT TypeCheckException IO TypeCheckState
 typecheck ast = do
-  v <- return $ map execTypeCheck (map checkTopLevel ast)
-  putStrLn $ show v
-  return ()
+  return $ execTypeCheck (mapM checkTopLevel ast)

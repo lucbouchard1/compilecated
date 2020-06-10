@@ -10,6 +10,7 @@ import Control.Monad.Trans
 import System.IO
 import System.Environment
 import System.Console.Haskeline
+import Control.Monad.Except
 
 import qualified LLVM.AST as AST
 
@@ -22,7 +23,9 @@ process modo source = do
   case res of
     Left err -> print err >> return Nothing
     Right ex -> do
-      typecheck ex
+      t <- runExceptT $ typecheck ex
+      putStrLn $ show t
+      either (putStrLn . show) (\_ -> putStrLn "Type Check Success") t
       ast <- codegen modo ex
       return $ Just ast
 
