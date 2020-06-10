@@ -20,7 +20,8 @@ instance Exception TypeCheckException
 
 data TypeCheckState 
   = TypeCheckState {
-    symtab :: SymbolTable
+    symtab :: SymbolTable,
+    symtabGlobal :: SymbolTable
   }
   deriving (Show)
 
@@ -30,17 +31,20 @@ newtype TypeCheck a = TypeCheck { runTypeCheck :: State TypeCheckState a}
 -- Type Check Operations
 
 emptyTypeCheck :: TypeCheckState
-emptyTypeCheck = TypeCheckState []
+emptyTypeCheck = TypeCheckState [] []
 
 execTypeCheck :: TypeCheck a -> TypeCheckState
 execTypeCheck m = execState (runTypeCheck m) emptyTypeCheck
 
 -- Symbol Table
 
+clear :: TypeCheck ()
+clear = modify $ \s -> s { symtab = [] }
+
 assign :: String -> S.Type -> TypeCheck ()
 assign var x = do
   syms <- gets symtab
-  modify $ \s -> s { symtab = [(var, x)] ++ syms }
+  modify $ \s -> s { symtab = (var, x) : syms }
 
 getvar :: String -> TypeCheck S.Type
 getvar var = do
@@ -83,11 +87,13 @@ checkStmt (S.Return e) = do
 
 checkTopLevel :: S.Defn -> TypeCheck ()
 checkTopLevel (S.Function t n args body) = do
-  forM args checkDecl
-  forM body checkStmt
+  forM_ args checkDecl
+  forM_ body checkStmt
   return ()
 checkTopLevel (S.Extern _ _) = return ()
 
 typecheck :: [S.Defn] -> ExceptT TypeCheckException IO TypeCheckState
-typecheck ast = do
-  return $ execTypeCheck (mapM checkTopLevel ast)
+typecheck ast = return $ execTypeCheck (foldM (\_ t -> do
+  checkTopLevel t
+  clear
+  ) () ast)
