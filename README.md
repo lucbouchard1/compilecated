@@ -25,7 +25,7 @@ stack build
 Right now, the program just outputs LLVM IR for a C file. To see this in action, run the following:
 
 ```
-stack exec compilecated test/test.c
+stack exec compilecated test/build_success.c
 ```
 
 You can also write your own C files and pass them to the compiler, just be aware that I haven't yet implemented MANY C features.
