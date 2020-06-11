@@ -63,7 +63,7 @@ getGlobalVar var = do
   syms <- gets symtabGlobal
   case lookup var syms of
     Just x  -> return x
-    Nothing -> error $ "Local variable not in scope: " ++ show var
+    Nothing -> error $ "Global variable not in scope: " ++ show var
 
 -- Check types
 
@@ -106,7 +106,7 @@ checkTopLevel (S.Function t n args body) = do
 checkTopLevel (S.Extern _ _) = return ()
 
 typecheck :: [S.Defn] -> ExceptT TypeCheckException IO TypeCheckState
-typecheck ast = return $ execTypeCheck (foldM (\_ t -> do
+typecheck ast = lift $ return $ execTypeCheck $ foldM (\_ t -> do
   checkTopLevel t
   clear
-  ) () ast)
+  ) () ast
