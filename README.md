@@ -28,8 +28,11 @@ Right now, the program just outputs LLVM IR for a C file. To see this in action,
 stack exec compilecated test/build_success.c
 ```
 
-You can also write your own C files and pass them to the compiler, just be aware that I haven't yet implemented MANY C features.
+To see what a build failure looks like, run:
 
+```
+stack exec compilecated test/build_failure.c
+```
 
 ## Milestone 1
 
