@@ -56,7 +56,7 @@ getvar var = do
 assignGlobal :: String -> S.Type -> TypeCheck ()
 assignGlobal var x = do
   syms <- gets symtabGlobal
-  modify $ \s -> s { symtab = (var, x) : syms }
+  modify $ \s -> s { symtabGlobal = (var, x) : syms }
 
 getGlobalVar :: String -> TypeCheck S.Type
 getGlobalVar var = do
