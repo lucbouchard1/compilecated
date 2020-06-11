@@ -12,8 +12,9 @@ import qualified Syntax as S
 
 type SymbolTable = [(String, S.Type)]
 
-data TypeCheckException =
-  MismatchedTypes S.Type S.Type
+data TypeCheckException 
+  = MismatchedTypes S.Type S.Type
+  | UnexpectedType S.Type
   deriving (Show)
 
 instance Exception TypeCheckException
@@ -84,14 +85,14 @@ checkDecl (S.Decl t n) = assign n t
 checkStmt :: S.Stmt -> TypeCheck ()
 checkStmt (S.IfBlk c _ _) = do
   t <- checkType c
-  if t == S.Int || t == S.Float then return () else error "Expected integral type"
+  if t == S.Int || t == S.Float then return () else throw $ UnexpectedType t
 checkStmt (S.Define (S.Decl t n) e) = do
   expT <- checkType e
-  if expT == t then assign n t else error $ "Expected type: " ++ show t
+  if expT == t then assign n t else throw $ MismatchedTypes t expT
 checkStmt (S.Assign n e) = do
   varT <- getvar n
   expT <- checkType e
-  if varT == expT then return () else error $ "Expected type: " ++ show varT
+  if varT == expT then return () else throw $ MismatchedTypes varT expT
 checkStmt (S.Return e) = do
   checkType e
   return ()
