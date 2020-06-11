@@ -6,7 +6,15 @@ Compilecated is a C compiler written in Haskell.
 
 ## Build and Run
 
-You need to have stack installed to build my project. If you don't have stack installed, here are instructions: https://docs.haskellstack.org/en/stable/install_and_upgrade/
+### Installing LLVM
+
+The LLVM haskell binding is a bit behind in it's LLVM compatibility; it **requires llvm 4.0.0** which was released in 2017. If you're running Ubuntu, you can install this dependency by running:
+
+```
+apt install llvm-4.0-dev
+```
+
+Eric, I know you mentioned you have llvm-10.0.0 installed. I don't think installing 4.0.0 will interfere because the files should be properly versioned, but proceed cautiously. 
 
 To build my compiler, run:
 
