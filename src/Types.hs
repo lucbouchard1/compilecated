@@ -88,7 +88,6 @@ checkStmt (S.IfBlk c _ _) = do
 checkStmt (S.Define (S.Decl t n) e) = do
   expT <- checkType e
   if expT == t then assign n t else error $ "Expected type: " ++ show t
-  return ()
 checkStmt (S.Assign n e) = do
   varT <- getvar n
   expT <- checkType e
@@ -102,7 +101,6 @@ checkTopLevel (S.Function t n args body) = do
   assignGlobal n t
   forM_ args checkDecl
   forM_ body checkStmt
-  return ()
 checkTopLevel (S.Extern _ _) = return ()
 
 typecheck :: [S.Defn] -> ExceptT TypeCheckException IO TypeCheckState
