@@ -53,11 +53,23 @@ getvar var = do
     Just x  -> return x
     Nothing -> error $ "Local variable not in scope: " ++ show var
 
+assignGlobal :: String -> S.Type -> TypeCheck ()
+assignGlobal var x = do
+  syms <- gets symtabGlobal
+  modify $ \s -> s { symtab = (var, x) : syms }
+
+getGlobalVar :: String -> TypeCheck S.Type
+getGlobalVar var = do
+  syms <- gets symtabGlobal
+  case lookup var syms of
+    Just x  -> return x
+    Nothing -> error $ "Local variable not in scope: " ++ show var
+
 -- Check types
 
 checkType :: S.Expr -> TypeCheck S.Type
 checkType (S.Var s)          = getvar s
-checkType (S.Call _ _)      = return S.Int -- TODO: Return the actual function type
+checkType (S.Call n _)       = getGlobalVar n -- TODO: check the parameter types
 checkType (S.BinaryOp _ l r) = do -- TODO: Differentiate on different operations
   lt <- checkType l
   rt <- checkType r
@@ -87,6 +99,7 @@ checkStmt (S.Return e) = do
 
 checkTopLevel :: S.Defn -> TypeCheck ()
 checkTopLevel (S.Function t n args body) = do
+  assignGlobal n t
   forM_ args checkDecl
   forM_ body checkStmt
   return ()
